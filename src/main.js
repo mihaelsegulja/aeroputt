@@ -1,21 +1,29 @@
 import "./style.css"
-import { createSettings } from "./settings"
+import { createMenu } from "./menu"
 import { createTerrain, hash } from "./terrain"
+import { createCourse } from "./course"
+import { createHud, scoreText } from "./hud"
+import { createAudio } from "./audio"
 
 const canvas = document.getElementById("c")
 const ctx = canvas.getContext("2d")
 
-const seed = Math.floor(Math.random() * 4294967296)
-const terrain = createTerrain(seed)
+let seed = Math.floor(Math.random() * 4294967296)
+let terrain = createTerrain(seed)
+let course = createCourse(seed, terrain)
+const hud = createHud()
+const audio = createAudio()
 
 const ball = {
-  x: 100,
-  y: 100,
-  vx: 3,
+  x: 0,
+  y: 0,
+  vx: 0,
   vy: 0,
   radius: 14,
   gravity: 0.25
 }
+
+const lastValid = { x: 0, y: 0 }
 
 const SURFACES = {
   grass: { friction: 0.96, bounce: 0.65 },
@@ -24,19 +32,19 @@ const SURFACES = {
 }
 
 const PX_PER_M = 20
-const startX = ball.x
 
-const distanceEl = document.createElement("div")
-distanceEl.className = "aero-distance"
-
-const distanceLabel = document.createElement("span")
-distanceLabel.textContent = "Distance"
-
-const distanceValue = document.createElement("b")
-distanceValue.textContent = "0 m"
-
-distanceEl.append(distanceLabel, distanceValue)
-document.body.append(distanceEl)
+const game = {
+  hole: 0,
+  info: null,
+  strokes: 0,
+  shots: 0,
+  passed: 0,
+  doneStrokes: 0,
+  totalPar: 0,
+  phase: "play",
+  ready: true,
+  sunkAt: 0
+}
 
 let isDragging = false
 let dragStart = { x: 0, y: 0 }
@@ -59,10 +67,11 @@ let accumulator = 0
 /* Core */
 
 resize()
+startHole(0)
 
 window.addEventListener("resize", resize)
 window.addEventListener("mousedown", (e) => {
-  if (menuOpen || e.target !== canvas) return
+  if (menuOpen || game.phase !== "play" || e.target !== canvas) return
   const speed = Math.hypot(ball.vx, ball.vy)
   if (speed < 0.5) {
     const ballScreenX = ball.x - cameraX
@@ -107,21 +116,32 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("mouseup", () => {
   if (isDragging) {
     isDragging = false
-    
+
     const dx = dragStart.x - currentMouse.x
     const dy = dragStart.y - currentMouse.y
-    
+    const power = Math.hypot(dx, dy)
+
+    if (game.phase !== "play" || power < 3) return
+
+    game.ready = false
+    game.strokes++
+    game.shots++
     ball.vx = dx * launchPower
     ball.vy = dy * launchPower
+    audio.shot(power)
   }
 })
 
-createSettings((open) => {
-  menuOpen = open
-  isDragging = false
-  accumulator = 0
-  if (!open) lastTime = performance.now()
-}, seed)
+createMenu({
+  onToggle(open) {
+    menuOpen = open
+    isDragging = false
+    accumulator = 0
+    if (!open) lastTime = performance.now()
+  },
+  onReset: resetGame,
+  audio
+})
 
 requestAnimationFrame(loop)
 
@@ -130,6 +150,7 @@ requestAnimationFrame(loop)
 function resize() {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
+  if (game.ready) ball.y = getTerrainHeight(ball.x) - ball.radius
 }
 
 function loop(currentTime) {
@@ -151,10 +172,20 @@ function loop(currentTime) {
     accumulator = 0
   }
 
-  distanceValue.textContent = `${Math.round((ball.x - startX) / PX_PER_M)} m`
+  hud.update({
+    hole: game.hole + 1,
+    par: game.info.par,
+    toPin: Math.max(0, Math.round(Math.abs(game.info.cup - ball.x) / PX_PER_M)),
+    strokes: game.strokes,
+    shots: game.shots,
+    passed: game.passed,
+    score: game.doneStrokes - game.totalPar,
+    net: Math.round((ball.x - game.info.tee) / PX_PER_M)
+  })
 
   drawBackground()
   drawTerrain(currentTime)
+  drawHole(currentTime)
   drawBall()
   drawAimLine()
 
@@ -164,6 +195,79 @@ function loop(currentTime) {
 function updateCamera() {
   let targetCameraX = ball.x - canvas.width * 0.3
   cameraX += (targetCameraX - cameraX) * 0.1
+}
+
+function startHole(n) {
+  game.hole = n
+  game.info = course.hole(n)
+  game.strokes = 0
+  game.phase = "play"
+  game.ready = true
+  game.sunkAt = 0
+
+  ball.x = game.info.tee
+  ball.y = getTerrainHeight(ball.x) - ball.radius
+  ball.vx = 0
+  ball.vy = 0
+  lastValid.x = ball.x
+  lastValid.y = ball.y
+  isDragging = false
+  cameraX = ball.x - canvas.width * 0.3
+}
+
+function resetGame() {
+  seed = Math.floor(Math.random() * 4294967296)
+  terrain = createTerrain(seed)
+  course = createCourse(seed, terrain)
+  game.shots = 0
+  game.passed = 0
+  game.doneStrokes = 0
+  game.totalPar = 0
+  game.phase = "play"
+  game.ready = true
+  game.sunkAt = 0
+  accumulator = 0
+  lastTime = performance.now()
+  hud.clearToast()
+  startHole(0)
+}
+
+function sinkHole() {
+  game.phase = "sunk"
+  game.sunkAt = performance.now()
+  ball.vx = 0
+  ball.vy = 0
+  game.passed++
+  game.doneStrokes += game.strokes
+  game.totalPar += game.info.par
+  audio.sink()
+
+  const diff = game.strokes - game.info.par
+  const strokes = `${game.strokes} ${game.strokes === 1 ? "stroke" : "strokes"}`
+  hud.showToast(
+    `Hole ${game.hole + 1} · ${strokes}`,
+    `${resultText(diff)} · ${scoreText(game.doneStrokes - game.totalPar)}`
+  )
+}
+
+function resultText(diff) {
+  if (diff <= -3) return "Albatross"
+  if (diff === -2) return "Eagle"
+  if (diff === -1) return "Birdie"
+  if (diff === 0) return "Par"
+  if (diff === 1) return "Bogey"
+  if (diff === 2) return "Double bogey"
+  return `${diff} over par`
+}
+
+function isSunk() {
+  const cupY = getTerrainHeight(game.info.cup)
+
+  return (
+    Math.abs(ball.x - game.info.cup) < 16 &&
+    ball.y + ball.radius > cupY - 8 &&
+    Math.hypot(ball.vx, ball.vy) < 7
+  )
 }
 
 function drawBackground() {
@@ -394,21 +498,126 @@ function drawSurfaceSpan(x0, x1, type, time) {
   }
 }
 
+function drawHole(time) {
+  const gx = game.info.cup - cameraX
+  const gy = getTerrainHeight(game.info.cup)
+
+  if (gx > -90 && gx < canvas.width + 90) {
+    const glow = ctx.createRadialGradient(gx, gy, 4, gx, gy, 88)
+    glow.addColorStop(0, "rgba(235,255,185,0.7)")
+    glow.addColorStop(0.5, "rgba(210,255,150,0.24)")
+    glow.addColorStop(1, "rgba(210,255,150,0)")
+
+    ctx.beginPath()
+    ctx.ellipse(gx, gy + 2, 88, 20, 0, 0, TAU)
+    ctx.fillStyle = glow
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.ellipse(gx, gy + 1, 16, 7, 0, 0, TAU)
+    ctx.fillStyle = "#072e1b"
+    ctx.fill()
+    ctx.strokeStyle = "rgba(235,255,205,0.95)"
+    ctx.lineWidth = 2
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.ellipse(gx, gy + 2, 11, 4, 0, 0, TAU)
+    ctx.fillStyle = "#041b10"
+    ctx.fill()
+
+    const wave = Math.sin(time * 0.006) * 3
+
+    ctx.save()
+    ctx.lineCap = "round"
+
+    ctx.strokeStyle = "rgba(255,255,255,0.95)"
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.moveTo(gx, gy - 2)
+    ctx.lineTo(gx, gy - 56)
+    ctx.stroke()
+
+    ctx.strokeStyle = "rgba(90,180,225,0.55)"
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(gx + 1, gy - 2)
+    ctx.lineTo(gx + 1, gy - 56)
+    ctx.stroke()
+
+    const flag = ctx.createLinearGradient(gx, gy - 58, gx + 34, gy - 38)
+    flag.addColorStop(0, "#ffd9e6")
+    flag.addColorStop(0.4, "#ff4f8b")
+    flag.addColorStop(1, "#d31754")
+
+    ctx.beginPath()
+    ctx.moveTo(gx + 1, gy - 57)
+    ctx.quadraticCurveTo(gx + 16, gy - 60 + wave, gx + 34, gy - 49 + wave)
+    ctx.lineTo(gx + 1, gy - 39)
+    ctx.closePath()
+    ctx.fillStyle = flag
+    ctx.fill()
+    ctx.strokeStyle = "rgba(255,255,255,0.7)"
+    ctx.lineWidth = 1
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  drawPinMarker(gx, gy)
+}
+
+function drawPinMarker(gx, gy) {
+  if (gx >= 22 && gx <= canvas.width - 22) return
+
+  const right = gx > canvas.width
+  const x = right ? canvas.width - 24 : 24
+  const y = Math.min(canvas.height - 90, Math.max(90, gy - 80))
+  const dir = right ? 1 : -1
+
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.beginPath()
+  ctx.moveTo(dir * 9, -10)
+  ctx.lineTo(dir * -4, 0)
+  ctx.lineTo(dir * 9, 10)
+  ctx.strokeStyle = "rgba(255,255,255,0.95)"
+  ctx.lineWidth = 4
+  ctx.lineCap = "round"
+  ctx.lineJoin = "round"
+  ctx.shadowColor = "rgba(0,120,190,0.6)"
+  ctx.shadowBlur = 8
+  ctx.stroke()
+  ctx.restore()
+}
+
 function drawBall() {
   const screenX = ball.x - cameraX
   const terrainY = getTerrainHeight(ball.x)
   const gap = Math.max(0, terrainY - (ball.y + ball.radius))
   const shrink = Math.max(0.35, 1 - gap / 260)
+  const sinkT = game.phase === "sunk"
+    ? Math.min(1, (performance.now() - game.sunkAt) / 400)
+    : 0
+  const sinkScale = 1 - sinkT * 0.6
 
   ctx.save()
   ctx.beginPath()
-  ctx.ellipse(screenX, terrainY + 3, ball.radius * 1.25 * shrink, ball.radius * 0.4 * shrink, 0, 0, TAU)
+  ctx.ellipse(
+    screenX,
+    terrainY + 3,
+    ball.radius * 1.25 * shrink * sinkScale,
+    ball.radius * 0.4 * shrink * sinkScale,
+    0,
+    0,
+    TAU
+  )
   ctx.fillStyle = "rgba(4,60,32,0.22)"
   ctx.fill()
   ctx.restore()
 
   ctx.save()
-  ctx.translate(screenX, ball.y)
+  ctx.translate(screenX, ball.y + sinkT * 16)
+  ctx.scale(sinkScale, sinkScale)
 
   ctx.shadowColor = "rgba(110,225,255,0.85)"
   ctx.shadowBlur = 16
@@ -456,7 +665,8 @@ function stepBall(b) {
     const len = Math.hypot(slope, 1)
     const nx = slope / len
     const ny = -1 / len
-    const s = SURFACES[getSurface(b.x)]
+    const surface = getSurface(b.x)
+    const s = SURFACES[surface]
 
     b.y = terrainY - b.radius / len
 
@@ -465,13 +675,30 @@ function stepBall(b) {
     const ty = nx
     const vt = b.vx * tx + b.vy * ty
 
+    if (surface === "water" && b === ball) {
+      audio.bounce("water", Math.max(1, -vn))
+      b.x = lastValid.x
+      b.y = lastValid.y
+      b.vx = 0
+      b.vy = 0
+      game.ready = true
+      cameraX = b.x - canvas.width * 0.3
+      return
+    }
+
     if (vn < -0.35) {
+      if (b === ball) audio.bounce(surface, -vn)
       const bounce = -vn * s.bounce
       b.vx = tx * vt * s.friction + nx * bounce
       b.vy = ty * vt * s.friction + ny * bounce
     } else {
       b.vx = tx * vt * s.friction
       b.vy = ty * vt * s.friction
+    }
+
+    if (b === ball) {
+      lastValid.x = b.x
+      lastValid.y = b.y
     }
   }
 
@@ -490,7 +717,16 @@ function stepBall(b) {
 
 function updateBall() {
   if (isDragging) return
+
+  if (game.phase === "sunk") {
+    if (performance.now() - game.sunkAt > 1000) startHole(game.hole + 1)
+    return
+  }
+
+  if (game.ready) return
+
   stepBall(ball)
+  if (isSunk()) sinkHole()
 }
 
 function drawAimLine() {
