@@ -48,7 +48,7 @@ function trimHtmlPlugin() {
 export default defineConfig({
   plugins: [
     viteSingleFile({
-      outputFileName: 'aeroputt.html',
+      outputFileName: 'index.html',
       removeViteModuleLoader: true,
     }),
     trimHtmlPlugin(),
