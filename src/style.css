@@ -17,18 +17,18 @@ canvas {
   display: block;
 }
 
-.aero-hud,
-.aero-toggle,
-.aero-btn,
-.aero-toast {
+.hud,
+.toggle,
+.btn,
+.toast {
   position: relative;
   isolation: isolate;
 }
 
-.aero-hud::before,
-.aero-toggle::before,
-.aero-btn::before,
-.aero-toast::before {
+.hud::before,
+.toggle::before,
+.btn::before,
+.toast::before {
   content: "";
   position: absolute;
   left: 7%;
@@ -42,9 +42,10 @@ canvas {
   pointer-events: none;
 }
 
-.aero-hud::after,
-.aero-toggle::after,
-.aero-btn::after {
+.hud::after,
+.toggle::after,
+.btn::after,
+.toast::after {
   content: "";
   position: absolute;
   left: 12%;
@@ -58,9 +59,10 @@ canvas {
   pointer-events: none;
 }
 
-.aero-hud,
-.aero-toggle,
-.aero-btn {
+.hud,
+.toggle,
+.btn,
+.toast {
   border: 1px solid rgba(255, 255, 255, 0.82);
   background:
     radial-gradient(100% 130% at 50% -30%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 62%),
@@ -73,7 +75,7 @@ canvas {
   backdrop-filter: blur(5px) saturate(130%);
 }
 
-.aero-hud {
+.hud {
   position: fixed;
   top: 18px;
   left: 18px;
@@ -86,14 +88,14 @@ canvas {
   pointer-events: none;
 }
 
-.aero-hud-head,
-.aero-hud-row {
+.hud-head,
+.hud-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 
-.aero-hud-head {
+.hud-head {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -101,12 +103,12 @@ canvas {
   color: #0a5b8e;
 }
 
-.aero-hud-head b {
+.hud-head b {
   font-size: 11px;
   color: #06456f;
 }
 
-.aero-hud-pin {
+.hud-pin {
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -114,7 +116,7 @@ canvas {
   margin: 2px 0 3px;
 }
 
-.aero-hud-pin b {
+.hud-pin b {
   font-size: 28px;
   font-weight: 700;
   line-height: 1;
@@ -122,7 +124,7 @@ canvas {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 5px rgba(0, 55, 95, 0.35);
 }
 
-.aero-hud-pin span {
+.hud-pin span {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -131,7 +133,7 @@ canvas {
   text-shadow: 0 1px 2px rgba(0, 55, 95, 0.35);
 }
 
-.aero-hud-row {
+.hud-row {
   margin-top: 3px;
   font-size: 9px;
   font-weight: 600;
@@ -140,67 +142,57 @@ canvas {
   color: #0a5b8e;
 }
 
-.aero-hud-row b {
+.hud-row b {
   font-size: 11px;
   letter-spacing: 0.04em;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 55, 95, 0.35);
 }
 
-.aero-hud-foot {
+.hud-foot {
   color: rgba(10, 91, 142, 0.85);
 }
 
-.aero-hud-foot b {
+.hud-foot b {
   font-size: 10px;
 }
 
-.aero-toast {
+.toast {
   position: fixed;
-  top: 96px;
+  bottom: 22px;
   left: 50%;
   z-index: 8;
-  transform: translate(-50%, -6px);
-  padding: 10px 22px 11px;
+  transform: translate(-50%, 6px);
+  padding: 8px 18px 9px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  background:
-    radial-gradient(120% 90% at 30% -20%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0) 62%),
-    linear-gradient(180deg, rgba(226, 250, 255, 0.92), rgba(132, 222, 255, 0.72) 42%, rgba(25, 146, 208, 0.78) 78%, rgba(8, 92, 157, 0.84));
-  box-shadow:
-    0 10px 26px rgba(0, 45, 80, 0.32),
-    inset 0 1px 0 #fff,
-    inset 0 -1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -9px 18px rgba(0, 70, 130, 0.24);
-  backdrop-filter: blur(6px) saturate(130%);
-  color: #fff;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   text-align: center;
+  white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
-.aero-toast.show {
+.toast.show {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
 }
 
-.aero-toast b {
+.toast b {
   display: block;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: #fff;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 55, 95, 0.35);
 }
 
-.aero-toast span {
+.toast span {
   display: block;
   margin-top: 2px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -208,7 +200,7 @@ canvas {
   text-shadow: 0 1px 2px rgba(0, 55, 95, 0.35);
 }
 
-.aero-trigger {
+.trigger {
   position: fixed;
   top: 18px;
   right: 18px;
@@ -234,7 +226,7 @@ canvas {
   transition: transform 0.12s, filter 0.12s;
 }
 
-.aero-trigger::before {
+.trigger::before {
   content: "";
   position: absolute;
   inset: 3px 4px 54%;
@@ -245,7 +237,7 @@ canvas {
   pointer-events: none;
 }
 
-.aero-burger {
+.burger {
   position: relative;
   z-index: 1;
   display: flex;
@@ -254,7 +246,7 @@ canvas {
   width: 18px;
 }
 
-.aero-burger i {
+.burger i {
   display: block;
   width: 100%;
   height: 2px;
@@ -265,16 +257,16 @@ canvas {
     0 0 5px rgba(180, 245, 255, 0.55);
 }
 
-.aero-trigger:hover {
+.trigger:hover {
   transform: scale(1.07);
   filter: brightness(1.08);
 }
 
-.aero-trigger:active {
+.trigger:active {
   transform: scale(0.95);
 }
 
-.aero-overlay {
+.overlay {
   position: fixed;
   inset: 0;
   z-index: 10;
@@ -290,11 +282,11 @@ canvas {
   backdrop-filter: blur(6px) saturate(130%);
 }
 
-.aero-overlay[hidden] {
+.overlay[hidden] {
   display: none;
 }
 
-.aero-panel {
+.panel {
   position: relative;
   width: min(360px, 84vw);
   padding: 30px 30px 34px;
@@ -308,7 +300,7 @@ canvas {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-.aero-panel::before {
+.panel::before {
   content: "";
   position: absolute;
   inset: 2px 2px 52%;
@@ -317,7 +309,7 @@ canvas {
   pointer-events: none;
 }
 
-.aero-title {
+.title {
   position: relative;
   margin: 0;
   font-size: 24px;
@@ -327,7 +319,7 @@ canvas {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 6px rgba(0, 55, 95, 0.2);
 }
 
-.aero-toggle {
+.toggle {
   position: relative;
   display: flex;
   align-items: center;
@@ -347,7 +339,7 @@ canvas {
   cursor: pointer;
 }
 
-.aero-toggle-state {
+.toggle-state {
   display: flex;
   align-items: center;
   padding: 5px 10px;
@@ -361,17 +353,17 @@ canvas {
   text-shadow: 0 1px 2px rgba(0, 40, 70, 0.35);
 }
 
-.aero-toggle:hover {
+.toggle:hover {
   filter: brightness(1.07);
 }
 
-.aero-actions {
+.actions {
   display: flex;
   gap: 10px;
   margin-top: 16px;
 }
 
-.aero-btn {
+.btn {
   position: relative;
   margin-top: 20px;
   padding: 12px 46px;
@@ -386,14 +378,14 @@ canvas {
   transition: transform 0.12s, filter 0.12s, box-shadow 0.12s;
 }
 
-.aero-actions .aero-btn {
+.actions .btn {
   flex: 1;
   margin-top: 0;
   padding: 12px 10px;
   font-size: 14px;
 }
 
-.aero-btn:hover {
+.btn:hover {
   transform: translateY(-1px);
   filter: brightness(1.08);
   box-shadow:
@@ -403,13 +395,22 @@ canvas {
     inset 0 -10px 20px rgba(0, 60, 110, 0.18);
 }
 
-.aero-btn:active {
+.btn:active {
   transform: translateY(1px) scale(0.98);
 }
 
-.aero-trigger:focus-visible,
-.aero-toggle:focus-visible,
-.aero-btn:focus-visible {
+.trigger:focus-visible,
+.toggle:focus-visible,
+.btn:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.9);
   outline-offset: 3px;
+}
+
+@media (max-height: 260px) {
+  .hud {
+    top: 10px;
+    left: 10px;
+    transform: scale(0.78);
+    transform-origin: top left;
+  }
 }

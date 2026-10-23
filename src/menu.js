@@ -5,9 +5,9 @@ export function createMenu({ onToggle, onReset, audio }) {
   let mutedBtn
 
   const trigger = document.createElement("button")
-  trigger.className = "aero-trigger"
+  trigger.className = "trigger"
   trigger.setAttribute("aria-label", "Menu")
-  trigger.innerHTML = '<span class="aero-burger"><i></i><i></i><i></i></span>'
+  trigger.innerHTML = '<span class="burger"><i></i><i></i><i></i></span>'
   trigger.addEventListener("click", () => {
     if (!open) show()
   })
@@ -15,14 +15,14 @@ export function createMenu({ onToggle, onReset, audio }) {
 
   function build() {
     overlay = document.createElement("div")
-    overlay.className = "aero-overlay"
+    overlay.className = "overlay"
     overlay.hidden = true
-    overlay.innerHTML = `<div class="aero-panel"><h2 class="aero-title">Menu</h2><button class="aero-toggle" type="button" aria-pressed="true"><span>Audio</span><span class="aero-toggle-state"><b>On</b></span></button><div class="aero-actions"><button class="aero-btn aero-btn-reset" type="button">Reset</button><button class="aero-btn aero-btn-resume" type="button">Resume</button></div></div>`
+    overlay.innerHTML = `<div class="panel"><h2 class="title">Menu</h2><button class="toggle" type="button" aria-pressed="true"><span>Audio</span><span class="toggle-state"><b>On</b></span></button><div class="actions"><button class="btn btn-reset" type="button">Reset</button><button class="btn btn-resume" type="button">Resume</button></div></div>`
 
-    resumeBtn = overlay.querySelector(".aero-btn-resume")
-    const resetBtn = overlay.querySelector(".aero-btn-reset")
-    mutedBtn = overlay.querySelector(".aero-toggle")
-    const muteState = overlay.querySelector(".aero-toggle-state b")
+    resumeBtn = overlay.querySelector(".btn-resume")
+    const resetBtn = overlay.querySelector(".btn-reset")
+    mutedBtn = overlay.querySelector(".toggle")
+    const muteState = overlay.querySelector(".toggle-state b")
 
     function syncAudio() {
       const on = !audio.isMuted()

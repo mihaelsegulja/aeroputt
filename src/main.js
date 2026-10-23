@@ -8,7 +8,10 @@ import { createAudio } from "./audio"
 const canvas = document.getElementById("c")
 const ctx = canvas.getContext("2d")
 
-let seed = Math.floor(Math.random() * 4294967296)
+// "| 0" does the same as Math.floor
+const generateSeed = () => (Math.random() * 4294967296) | 0
+
+let seed = generateSeed()
 let terrain = createTerrain(seed)
 let course = createCourse(seed, terrain)
 const hud = createHud()
@@ -23,7 +26,7 @@ const ball = {
   gravity: 0.25
 }
 
-const lastValid = { x: 0, y: 0 }
+const shotOrigin = { x: 0, y: 0 }
 
 const SURFACES = {
   grass: { friction: 0.96, bounce: 0.65 },
@@ -32,6 +35,8 @@ const SURFACES = {
 }
 
 const PX_PER_M = 20
+const GROUND_Y = 520
+const TERRAIN_AMP = 240
 
 const game = {
   hole: 0,
@@ -53,6 +58,7 @@ let currentMouse = { x: 0, y: 0 }
 const launchPower = 0.12
 
 let cameraX = 0
+let cameraY = 0
 
 let lastTime
 let isPaused = false
@@ -75,7 +81,8 @@ window.addEventListener("mousedown", (e) => {
   const speed = Math.hypot(ball.vx, ball.vy)
   if (speed < 0.5) {
     const ballScreenX = ball.x - cameraX
-    const dist = Math.hypot(e.clientX - ballScreenX, e.clientY - ball.y)
+    const ballScreenY = ball.y - cameraY
+    const dist = Math.hypot(e.clientX - ballScreenX, e.clientY - ballScreenY)
     if (dist < 60) {
       isDragging = true
       dragStart = { x: e.clientX, y: e.clientY }
@@ -123,6 +130,8 @@ window.addEventListener("mouseup", () => {
 
     if (game.phase !== "play" || power < 3) return
 
+    shotOrigin.x = ball.x
+    shotOrigin.y = ball.y
     game.ready = false
     game.strokes++
     game.shots++
@@ -150,7 +159,18 @@ requestAnimationFrame(loop)
 function resize() {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
-  if (game.ready) ball.y = getTerrainHeight(ball.x) - ball.radius
+  cameraX = ball.x - canvas.width * 0.3
+  centerCameraY()
+}
+
+function clampCameraY(y) {
+  const low = GROUND_Y - canvas.height * 0.85 - TERRAIN_AMP
+  const high = GROUND_Y - canvas.height * 0.65 + TERRAIN_AMP
+  return Math.min(high, Math.max(low, y))
+}
+
+function centerCameraY() {
+  cameraY = clampCameraY(ball.y + ball.radius - canvas.height * 0.65)
 }
 
 function loop(currentTime) {
@@ -193,8 +213,13 @@ function loop(currentTime) {
 }
 
 function updateCamera() {
-  let targetCameraX = ball.x - canvas.width * 0.3
-  cameraX += (targetCameraX - cameraX) * 0.1
+  cameraX += (ball.x - canvas.width * 0.3 - cameraX) * 0.1
+
+  const top = canvas.height * 0.22
+  const bottom = canvas.height * 0.78
+  const screenY = ball.y - cameraY
+  const target = screenY < top ? ball.y - top : screenY > bottom ? ball.y - bottom : cameraY
+  cameraY += (clampCameraY(target) - cameraY) * 0.1
 }
 
 function startHole(n) {
@@ -209,14 +234,15 @@ function startHole(n) {
   ball.y = getTerrainHeight(ball.x) - ball.radius
   ball.vx = 0
   ball.vy = 0
-  lastValid.x = ball.x
-  lastValid.y = ball.y
+  shotOrigin.x = ball.x
+  shotOrigin.y = ball.y
   isDragging = false
   cameraX = ball.x - canvas.width * 0.3
+  centerCameraY()
 }
 
 function resetGame() {
-  seed = Math.floor(Math.random() * 4294967296)
+  seed = generateSeed()
   terrain = createTerrain(seed)
   course = createCourse(seed, terrain)
   game.shots = 0
@@ -266,7 +292,7 @@ function isSunk() {
   return (
     Math.abs(ball.x - game.info.cup) < 16 &&
     ball.y + ball.radius > cupY - 8 &&
-    Math.hypot(ball.vx, ball.vy) < 7
+    Math.hypot(ball.vx, ball.vy) < 9
   )
 }
 
@@ -327,7 +353,7 @@ function drawCloud(x, y, scale, v) {
 }
 
 function getTerrainHeight(x) {
-  return canvas.height * 0.65 + terrain.offset(x)
+  return GROUND_Y + terrain.offset(x)
 }
 
 function getSurface(x) {
@@ -341,7 +367,7 @@ function drawTerrain(time) {
 
   for (let screenX = 0; screenX <= canvas.width; screenX += 5) {
     let worldX = screenX + cameraX
-    let y = getTerrainHeight(worldX)
+    let y = getTerrainHeight(worldX) - cameraY
     ctx.lineTo(screenX, y)
   }
 
@@ -389,7 +415,7 @@ function drawTerrain(time) {
 
   for (let screenX = 0; screenX <= canvas.width; screenX += 5) {
     let worldX = screenX + cameraX
-    let y = getTerrainHeight(worldX)
+    let y = getTerrainHeight(worldX) - cameraY
     if (screenX === 0) {
       ctx.moveTo(screenX, y)
     } else {
@@ -455,31 +481,31 @@ function drawSurfaceSpan(x0, x1, type, time) {
   }
 
   ctx.beginPath()
-  ctx.moveTo(left, getTerrainHeight(x0) + top)
+  ctx.moveTo(left, getTerrainHeight(x0) - cameraY + top)
 
   for (let x = x0 + 6; x < x1; x += 6) {
-    ctx.lineTo(x - cameraX, getTerrainHeight(x) + top)
+    ctx.lineTo(x - cameraX, getTerrainHeight(x) - cameraY + top)
   }
 
-  ctx.lineTo(right, getTerrainHeight(x1) + top)
+  ctx.lineTo(right, getTerrainHeight(x1) - cameraY + top)
 
   for (let x = x1; x > x0; x -= 6) {
-    ctx.lineTo(x - cameraX, getTerrainHeight(x) + thickness(x))
+    ctx.lineTo(x - cameraX, getTerrainHeight(x) - cameraY + thickness(x))
   }
 
-  ctx.lineTo(left, getTerrainHeight(x0) + thickness(x0))
+  ctx.lineTo(left, getTerrainHeight(x0) - cameraY + thickness(x0))
   ctx.closePath()
   ctx.fillStyle = grad
   ctx.fill()
 
   ctx.beginPath()
-  ctx.moveTo(left, getTerrainHeight(x0) + top)
+  ctx.moveTo(left, getTerrainHeight(x0) - cameraY + top)
 
   for (let x = x0 + 6; x < x1; x += 6) {
-    ctx.lineTo(x - cameraX, getTerrainHeight(x) + top)
+    ctx.lineTo(x - cameraX, getTerrainHeight(x) - cameraY + top)
   }
 
-  ctx.lineTo(right, getTerrainHeight(x1) + top)
+  ctx.lineTo(right, getTerrainHeight(x1) - cameraY + top)
   ctx.strokeStyle = water ? "rgba(255,255,255,0.9)" : "rgba(110,65,20,0.4)"
   ctx.lineWidth = water ? 2 : 1
   ctx.stroke()
@@ -490,7 +516,7 @@ function drawSurfaceSpan(x0, x1, type, time) {
   ctx.lineWidth = 1.4
 
   for (let x = x0 + 12; x < x1; x += 28) {
-    const y = getTerrainHeight(x) + 6 + Math.sin(x * 0.05 + time * 0.004) * 1.5
+    const y = getTerrainHeight(x) - cameraY + 6 + Math.sin(x * 0.05 + time * 0.004) * 1.5
     ctx.beginPath()
     ctx.moveTo(x - cameraX - 5, y)
     ctx.lineTo(x - cameraX + 5, y)
@@ -500,7 +526,7 @@ function drawSurfaceSpan(x0, x1, type, time) {
 
 function drawHole(time) {
   const gx = game.info.cup - cameraX
-  const gy = getTerrainHeight(game.info.cup)
+  const gy = getTerrainHeight(game.info.cup) - cameraY
 
   if (gx > -90 && gx < canvas.width + 90) {
     const glow = ctx.createRadialGradient(gx, gy, 4, gx, gy, 88)
@@ -592,8 +618,9 @@ function drawPinMarker(gx, gy) {
 
 function drawBall() {
   const screenX = ball.x - cameraX
-  const terrainY = getTerrainHeight(ball.x)
-  const gap = Math.max(0, terrainY - (ball.y + ball.radius))
+  const screenY = ball.y - cameraY
+  const terrainY = getTerrainHeight(ball.x) - cameraY
+  const gap = Math.max(0, terrainY - (screenY + ball.radius))
   const shrink = Math.max(0.35, 1 - gap / 260)
   const sinkT = game.phase === "sunk"
     ? Math.min(1, (performance.now() - game.sunkAt) / 400)
@@ -616,7 +643,7 @@ function drawBall() {
   ctx.restore()
 
   ctx.save()
-  ctx.translate(screenX, ball.y + sinkT * 16)
+  ctx.translate(screenX, screenY + sinkT * 16)
   ctx.scale(sinkScale, sinkScale)
 
   ctx.shadowColor = "rgba(110,225,255,0.85)"
@@ -677,12 +704,13 @@ function stepBall(b) {
 
     if (surface === "water" && b === ball) {
       audio.bounce("water", Math.max(1, -vn))
-      b.x = lastValid.x
-      b.y = lastValid.y
+      b.x = shotOrigin.x
+      b.y = shotOrigin.y
       b.vx = 0
       b.vy = 0
       game.ready = true
       cameraX = b.x - canvas.width * 0.3
+      centerCameraY()
       return
     }
 
@@ -694,11 +722,6 @@ function stepBall(b) {
     } else {
       b.vx = tx * vt * s.friction
       b.vy = ty * vt * s.friction
-    }
-
-    if (b === ball) {
-      lastValid.x = b.x
-      lastValid.y = b.y
     }
   }
 
@@ -726,6 +749,7 @@ function updateBall() {
   if (game.ready) return
 
   stepBall(ball)
+  if (game.ready) return
   if (isSunk()) sinkHole()
 }
 
@@ -736,6 +760,7 @@ function drawAimLine() {
   const dy = dragStart.y - currentMouse.y
 
   const ballScreenX = ball.x - cameraX
+  const ballScreenY = ball.y - cameraY
 
   ctx.save()
 
@@ -743,14 +768,14 @@ function drawAimLine() {
   ctx.shadowBlur = 12
 
   ctx.beginPath()
-  ctx.moveTo(ballScreenX, ball.y)
+  ctx.moveTo(ballScreenX, ballScreenY)
   ctx.lineTo(currentMouse.x, currentMouse.y)
   ctx.strokeStyle = "rgba(255, 255, 255, 0.25)"
   ctx.lineWidth = 6
   ctx.stroke()
 
   ctx.beginPath()
-  ctx.moveTo(ballScreenX, ball.y)
+  ctx.moveTo(ballScreenX, ballScreenY)
   ctx.lineTo(currentMouse.x, currentMouse.y)
   ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"
   ctx.lineWidth = 2
@@ -764,11 +789,12 @@ function drawAimLine() {
     stepBall(sim)
 
     const simScreenX = sim.x - cameraX
+    const simScreenY = sim.y - cameraY
 
     const dotRadius = 4.5
     let dotGrad = ctx.createRadialGradient(
-      simScreenX - 1, sim.y - 1, 0.5,
-      simScreenX, sim.y, dotRadius
+      simScreenX - 1, simScreenY - 1, 0.5,
+      simScreenX, simScreenY, dotRadius
     )
     dotGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)")
     dotGrad.addColorStop(0.5, "rgba(200, 245, 255, 0.6)")
@@ -778,13 +804,13 @@ function drawAimLine() {
     ctx.shadowBlur = 8
 
     ctx.beginPath()
-    ctx.arc(simScreenX, sim.y, dotRadius, 0, TAU)
+    ctx.arc(simScreenX, simScreenY, dotRadius, 0, TAU)
     ctx.fillStyle = dotGrad
     ctx.fill()
 
     ctx.shadowBlur = 0
     ctx.beginPath()
-    ctx.arc(simScreenX - 1.2, sim.y - 1.2, 1.2, 0, TAU)
+    ctx.arc(simScreenX - 1.2, simScreenY - 1.2, 1.2, 0, TAU)
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)"
     ctx.fill()
   }

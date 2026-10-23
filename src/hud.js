@@ -5,35 +5,35 @@ export function scoreText(score) {
 
 export function createHud() {
   const root = document.createElement("div")
-  root.className = "aero-hud"
+  root.className = "hud"
   root.innerHTML = `
-    <div class="aero-hud-head">
-      <span>Hole <b class="aero-hole">1</b></span>
-      <span>Par <b class="aero-par">2</b></span>
+    <div class="hud-head">
+      <span>Hole <b class="hole">1</b></span>
+      <span>Par <b class="par">2</b></span>
     </div>
-    <div class="aero-hud-pin"><b class="aero-pin">0</b><span>m to pin</span></div>
-    <div class="aero-hud-row">
-      <span>Strokes <b class="aero-strokes">0</b></span>
-      <span>Shots <b class="aero-shots">0</b></span>
+    <div class="hud-pin"><b class="pin">0</b><span>m to pin</span></div>
+    <div class="hud-row">
+      <span>Strokes <b class="strokes">0</b></span>
+      <span>Shots <b class="shots">0</b></span>
     </div>
-    <div class="aero-hud-row aero-hud-foot">
-      <span>Passed <b class="aero-passed">0</b></span>
-      <span>Total <b class="aero-score">E</b></span>
-      <span>Net <b class="aero-net">0 m</b></span>
+    <div class="hud-row hud-foot">
+      <span>Passed <b class="passed">0</b></span>
+      <span>Total <b class="score">E</b></span>
+      <span>Net <b class="net">0 m</b></span>
     </div>
   `
 
-  const holeEl = root.querySelector(".aero-hole")
-  const parEl = root.querySelector(".aero-par")
-  const pinEl = root.querySelector(".aero-pin")
-  const strokesEl = root.querySelector(".aero-strokes")
-  const shotsEl = root.querySelector(".aero-shots")
-  const passedEl = root.querySelector(".aero-passed")
-  const scoreEl = root.querySelector(".aero-score")
-  const netEl = root.querySelector(".aero-net")
+  const holeEl = root.querySelector(".hole")
+  const parEl = root.querySelector(".par")
+  const pinEl = root.querySelector(".pin")
+  const strokesEl = root.querySelector(".strokes")
+  const shotsEl = root.querySelector(".shots")
+  const passedEl = root.querySelector(".passed")
+  const scoreEl = root.querySelector(".score")
+  const netEl = root.querySelector(".net")
 
   const toast = document.createElement("div")
-  toast.className = "aero-toast"
+  toast.className = "toast"
 
   const toastTitle = document.createElement("b")
   const toastSub = document.createElement("span")
