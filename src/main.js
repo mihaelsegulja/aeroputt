@@ -55,7 +55,7 @@ let isDragging = false
 let dragStart = { x: 0, y: 0 }
 let currentMouse = { x: 0, y: 0 }
 
-const launchPower = 0.12
+const launchPower = 0.11
 
 let cameraX = 0
 let cameraY = 0
@@ -723,12 +723,6 @@ function stepBall(b) {
       b.vx = tx * vt * s.friction
       b.vy = ty * vt * s.friction
     }
-  }
-
-  // this only works if the ball is dragged to be shot very fast
-  if (b.x - b.radius < cameraX) {
-    b.x = b.radius + cameraX
-    b.vx = Math.max(0, -b.vx * 0.3)
   }
 
   // if moving slightly, stop

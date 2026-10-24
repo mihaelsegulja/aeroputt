@@ -17,7 +17,7 @@ export function createMenu({ onToggle, onReset, audio }) {
     overlay = document.createElement("div")
     overlay.className = "overlay"
     overlay.hidden = true
-    overlay.innerHTML = `<div class="panel"><h2 class="title">Menu</h2><button class="toggle" type="button" aria-pressed="true"><span>Audio</span><span class="toggle-state"><b>On</b></span></button><div class="actions"><button class="btn btn-reset" type="button">Reset</button><button class="btn btn-resume" type="button">Resume</button></div></div>`
+    overlay.innerHTML = `<div class="panel"><h2 class="title">MENU</h2><button class="toggle btn" type="button" aria-pressed="true"><span>Audio</span><span class="toggle-state"><b>On</b></span></button><div class="actions"><button class="btn btn-reset" type="button">Reset</button><button class="btn btn-resume" type="button">Resume</button></div></div>`
 
     resumeBtn = overlay.querySelector(".btn-resume")
     const resetBtn = overlay.querySelector(".btn-reset")

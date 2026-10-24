@@ -21,15 +21,27 @@ canvas {
 .hud,
 .toggle,
 .btn,
-.toast {
+.toast,
+.trigger {
   position: relative;
   isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    radial-gradient(100% 130% at 50% -30%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(200, 245, 255, 0.14) 46%, rgba(5, 80, 125, 0.4));
+  box-shadow:
+    0 7px 20px rgba(0, 45, 80, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -8px 18px rgba(0, 50, 95, 0.2);
+  backdrop-filter: blur(5px) saturate(130%);
 }
 
 .hud::before,
 .toggle::before,
 .btn::before,
-.toast::before {
+.toast::before,
+.trigger::before {
   content: "";
   position: absolute;
   left: 7%;
@@ -46,7 +58,8 @@ canvas {
 .hud::after,
 .toggle::after,
 .btn::after,
-.toast::after {
+.toast::after,
+.trigger::after {
   content: "";
   position: absolute;
   left: 12%;
@@ -60,28 +73,12 @@ canvas {
   pointer-events: none;
 }
 
-.hud,
-.toggle,
-.btn,
-.toast {
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  background:
-    radial-gradient(100% 130% at 50% -30%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(200, 245, 255, 0.14) 46%, rgba(5, 80, 125, 0.4));
-  box-shadow:
-    0 7px 20px rgba(0, 45, 80, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -8px 18px rgba(0, 50, 95, 0.2);
-  backdrop-filter: blur(5px) saturate(130%);
-}
-
 .hud {
   position: fixed;
   top: 18px;
   left: 18px;
   z-index: 5;
-  width: 196px;
+  width: 200px;
   padding: 10px 14px 11px;
   border-radius: 18px;
   color: #06456f;
@@ -96,9 +93,9 @@ canvas {
 }
 
 .hud-head {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #0a5b8e;
 }
@@ -117,17 +114,18 @@ canvas {
 }
 
 .hud-pin b {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
   color: #fff;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 5px rgba(0, 55, 95, 0.35);
 }
 
-.hud-pin span {
-  font-size: 9px;
+.hud-pin span,
+.toast span {
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #eafaff;
   text-shadow: 0 1px 2px rgba(0, 55, 95, 0.35);
@@ -135,7 +133,7 @@ canvas {
 
 .hud-row {
   margin-top: 3px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -189,14 +187,8 @@ canvas {
 }
 
 .toast span {
-  display: block;
+  font-size: 10px;
   margin-top: 2px;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #eafaff;
-  text-shadow: 0 1px 2px rgba(0, 55, 95, 0.35);
 }
 
 .trigger {
@@ -208,32 +200,12 @@ canvas {
   height: 46px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  background:
-    radial-gradient(circle at 34% 24%, #fff 0 7%, rgba(255, 255, 255, 0.85) 14%, rgba(214, 247, 255, 0.55) 28%, rgba(255, 255, 255, 0) 48%),
-    linear-gradient(180deg, #c8f4ff 0%, #74d2f7 38%, #168fd0 72%, #075d9e 100%);
   color: #06456f;
   display: grid;
   place-items: center;
   cursor: pointer;
-  isolation: isolate;
   overflow: hidden;
-  box-shadow:
-    0 7px 19px rgba(0, 45, 80, 0.3),
-    inset 0 1px 0 #fff,
-    inset 0 -9px 16px rgba(0, 70, 130, 0.28);
-  transition: transform 0.12s, filter 0.12s;
-}
-
-.trigger::before {
-  content: "";
-  position: absolute;
-  inset: 3px 4px 54%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-  filter: blur(0.3px);
-  z-index: -1;
-  pointer-events: none;
+  transition: transform 0.12s, filter 0.12s, box-shadow 0.12s;
 }
 
 .burger {
@@ -249,7 +221,7 @@ canvas {
   display: block;
   width: 100%;
   height: 2px;
-  border-radius: 999px;
+  border-radius: 99px;
   background: linear-gradient(180deg, #fff, #9de6ff);
   box-shadow:
     0 1px 1px rgba(0, 45, 80, 0.45),
@@ -312,7 +284,6 @@ canvas {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  letter-spacing: 0.04em;
   color: #0a5b8e;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 6px rgba(0, 55, 95, 0.2);
 }
@@ -322,37 +293,21 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   width: 100%;
   margin-top: 18px;
-  padding: 10px 12px 10px 18px;
-  border-radius: 999px;
-  color: #0a5b8e;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
-  cursor: pointer;
 }
 
 .toggle-state {
   display: flex;
   align-items: center;
   padding: 5px 10px;
-  border-radius: 999px;
+  border-radius: 99px;
   background: rgba(4, 55, 90, 0.24);
   box-shadow:
     inset 0 1px 3px rgba(0, 30, 60, 0.35),
     0 1px 0 rgba(255, 255, 255, 0.25);
   color: #fff;
-  letter-spacing: 0.08em;
   text-shadow: 0 1px 2px rgba(0, 40, 70, 0.35);
-}
-
-.toggle:hover {
-  filter: brightness(1.07);
 }
 
 .actions {
@@ -365,7 +320,7 @@ canvas {
   position: relative;
   flex: 1;
   padding: 12px 10px;
-  border-radius: 999px;
+  border-radius: 99px;
   color: #fff;
   font-family: inherit;
   font-size: 14px;
