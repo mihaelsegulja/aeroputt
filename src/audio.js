@@ -57,21 +57,6 @@ export function createAudio() {
     sfxBus.gain.value = 0.8
     sfxBus.connect(master)
 
-    const reverb = ctx.createConvolver()
-    reverb.buffer = createImpulse()
-    const wet = ctx.createGain()
-    wet.gain.value = 0.3
-    const musicSend = ctx.createGain()
-    musicSend.gain.value = 0.55
-    const sfxSend = ctx.createGain()
-    sfxSend.gain.value = 0.12
-    musicBus.connect(musicSend)
-    sfxBus.connect(sfxSend)
-    musicSend.connect(reverb)
-    sfxSend.connect(reverb)
-    reverb.connect(wet)
-    wet.connect(master)
-
     noise = createNoise()
   }
 
@@ -79,18 +64,6 @@ export function createAudio() {
     const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate)
     const data = buffer.getChannelData(0)
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
-    return buffer
-  }
-
-  function createImpulse() {
-    const length = Math.floor(ctx.sampleRate * 1.7)
-    const buffer = ctx.createBuffer(2, length, ctx.sampleRate)
-    for (let channel = 0; channel < 2; channel++) {
-      const data = buffer.getChannelData(channel)
-      for (let i = 0; i < length; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.8)
-      }
-    }
     return buffer
   }
 

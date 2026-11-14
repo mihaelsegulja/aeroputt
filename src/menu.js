@@ -5,9 +5,9 @@ export function createMenu({ onToggle, onReset, audio }) {
   let mutedBtn
 
   const trigger = document.createElement("button")
-  trigger.className = "trigger"
+  trigger.className = "trg"
   trigger.setAttribute("aria-label", "Menu")
-  trigger.innerHTML = '<span class="burger"><i></i><i></i><i></i></span>'
+  trigger.innerHTML = '<span class="brg"><i></i><i></i><i></i></span>'
   trigger.addEventListener("click", () => {
     if (!open) show()
   })
@@ -15,14 +15,14 @@ export function createMenu({ onToggle, onReset, audio }) {
 
   function build() {
     overlay = document.createElement("div")
-    overlay.className = "overlay"
+    overlay.className = "ovrl"
     overlay.hidden = true
-    overlay.innerHTML = `<div class="panel"><h2 class="title">MENU</h2><button class="toggle btn" type="button" aria-pressed="true"><span>Audio</span><span class="toggle-state"><b>On</b></span></button><div class="actions"><button class="btn btn-reset" type="button">Reset</button><button class="btn btn-resume" type="button">Resume</button></div></div>`
+    overlay.innerHTML = `<div class="pnl"><h2 class="ttl">MENU</h2><button class="tgl btn" type="button" aria-pressed="true"><span>Audio</span><span class="tgl-state"><b>On</b></span></button><div class="act"><button class="btn btn-reset" type="button">Reset</button><button class="btn btn-resume" type="button">Resume</button></div></div>`
 
     resumeBtn = overlay.querySelector(".btn-resume")
     const resetBtn = overlay.querySelector(".btn-reset")
-    mutedBtn = overlay.querySelector(".toggle")
-    const muteState = overlay.querySelector(".toggle-state b")
+    mutedBtn = overlay.querySelector(".tgl")
+    const muteState = overlay.querySelector(".tgl-state b")
 
     function syncAudio() {
       const on = !audio.isMuted()
@@ -63,7 +63,7 @@ export function createMenu({ onToggle, onReset, audio }) {
   }
 
   window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !open) show()
+    if (e.key.toLowerCase() === "m") open ? hide() : show()
   })
 
 }

@@ -52,6 +52,7 @@ const game = {
 }
 
 let isDragging = false
+let activePointer = null
 let dragStart = { x: 0, y: 0 }
 let currentMouse = { x: 0, y: 0 }
 
@@ -76,7 +77,7 @@ resize()
 startHole(0)
 
 window.addEventListener("resize", resize)
-window.addEventListener("mousedown", (e) => {
+window.addEventListener("pointerdown", (e) => {
   if (menuOpen || game.phase !== "play" || e.target !== canvas) return
   const speed = Math.hypot(ball.vx, ball.vy)
   if (speed < 0.5) {
@@ -85,8 +86,10 @@ window.addEventListener("mousedown", (e) => {
     const dist = Math.hypot(e.clientX - ballScreenX, e.clientY - ballScreenY)
     if (dist < 60) {
       isDragging = true
+      activePointer = e.pointerId
       dragStart = { x: e.clientX, y: e.clientY }
       currentMouse = { x: e.clientX, y: e.clientY }
+      canvas.setPointerCapture?.(e.pointerId)
       
       ball.vx = 0
       ball.vy = 0
@@ -114,37 +117,43 @@ document.addEventListener("visibilitychange", () => {
   }
 })
 
-window.addEventListener("mousemove", (e) => {
-  if (isDragging) {
+window.addEventListener("pointermove", (e) => {
+  if (isDragging && e.pointerId === activePointer) {
     currentMouse = { x: e.clientX, y: e.clientY }
   }
 })
 
-window.addEventListener("mouseup", () => {
-  if (isDragging) {
-    isDragging = false
+window.addEventListener("pointerup", (e) => {
+  if (!isDragging || e.pointerId !== activePointer) return
+  isDragging = false
+  activePointer = null
 
-    const dx = dragStart.x - currentMouse.x
-    const dy = dragStart.y - currentMouse.y
-    const power = Math.hypot(dx, dy)
+  const dx = dragStart.x - currentMouse.x
+  const dy = dragStart.y - currentMouse.y
+  const power = Math.hypot(dx, dy)
 
-    if (game.phase !== "play" || power < 3) return
+  if (game.phase !== "play" || power < 3) return
 
-    shotOrigin.x = ball.x
-    shotOrigin.y = ball.y
-    game.ready = false
-    game.strokes++
-    game.shots++
-    ball.vx = dx * launchPower
-    ball.vy = dy * launchPower
-    audio.shot(power)
-  }
+  shotOrigin.x = ball.x
+  shotOrigin.y = ball.y
+  game.ready = false
+  game.strokes++
+  game.shots++
+  ball.vx = dx * launchPower
+  ball.vy = dy * launchPower
+  audio.shot(power)
+})
+
+window.addEventListener("pointercancel", () => {
+  isDragging = false
+  activePointer = null
 })
 
 createMenu({
   onToggle(open) {
     menuOpen = open
     isDragging = false
+    activePointer = null
     accumulator = 0
     if (!open) lastTime = performance.now()
   },

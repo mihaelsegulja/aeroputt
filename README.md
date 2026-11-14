@@ -19,12 +19,24 @@ npm run build
 
 The production build is written to `dist/index.html`. Everything is bundled into one HTML file, so it can be opened directly in a browser.
 
+To package both upload variants:
+
+```sh
+npm run pack
+```
+
+That produces:
+
+- `dist/aeroputt-itch.zip` — contains `index.html`, for the itch.io browser upload
+- `dist/aeroputt-10kb.zip` — contains `aeroputt.html`, for the jam download
+- `dist/aeroputt.html` — the same build renamed for direct upload/download
+
 ## Controls
 
 - Drag back from the ball and release to shoot.
 - Use the top-right menu button for audio, Reset, and Resume.
-- Press `Esc` to open the menu.
-- Mouse controls are required.
+- Press `M` to toggle the menu.
+- Mouse or touch controls; best on desktop.
 
 ## Features
 
@@ -40,4 +52,4 @@ The production build is written to `dist/index.html`. Everything is bundled into
 
 ## Jam entry
 
-Made for the 10 Kilobyte Game Jam. The current production build is about **9.6 kB gzip** and **9.8 kB zipped** (about **27.5 kB uncompressed**).
+Made for the 10 Kilobyte Game Jam. The current production build is about **9.4 kB gzip** and **9.4 kB zipped** (about **26.3 kB uncompressed**).

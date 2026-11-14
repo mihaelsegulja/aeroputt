@@ -11,18 +11,21 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 canvas {
   display: block;
+  touch-action: none;
 }
 
 .hud,
-.toggle,
+.tgl,
 .btn,
-.toast,
-.trigger {
+.tst,
+.trg {
   position: relative;
   isolation: isolate;
   border: 1px solid rgba(255, 255, 255, 0.82);
@@ -38,10 +41,10 @@ canvas {
 }
 
 .hud::before,
-.toggle::before,
+.tgl::before,
 .btn::before,
-.toast::before,
-.trigger::before {
+.tst::before,
+.trg::before {
   content: "";
   position: absolute;
   left: 7%;
@@ -56,10 +59,10 @@ canvas {
 }
 
 .hud::after,
-.toggle::after,
+.tgl::after,
 .btn::after,
-.toast::after,
-.trigger::after {
+.tst::after,
+.trg::after {
   content: "";
   position: absolute;
   left: 12%;
@@ -122,7 +125,7 @@ canvas {
 }
 
 .hud-pin span,
-.toast span {
+.tst span {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -155,7 +158,7 @@ canvas {
   font-size: 10px;
 }
 
-.toast {
+.tst {
   position: fixed;
   bottom: 22px;
   left: 50%;
@@ -171,13 +174,13 @@ canvas {
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
-.toast.show {
+.tst.show {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0);
 }
 
-.toast b {
+.tst b {
   display: block;
   font-size: 16px;
   font-weight: 600;
@@ -186,12 +189,12 @@ canvas {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 55, 95, 0.35);
 }
 
-.toast span {
+.tst span {
   font-size: 10px;
   margin-top: 2px;
 }
 
-.trigger {
+.trg {
   position: fixed;
   top: 18px;
   right: 18px;
@@ -208,7 +211,7 @@ canvas {
   transition: transform 0.12s, filter 0.12s, box-shadow 0.12s;
 }
 
-.burger {
+.brg {
   position: relative;
   z-index: 1;
   display: flex;
@@ -217,7 +220,7 @@ canvas {
   width: 18px;
 }
 
-.burger i {
+.brg i {
   display: block;
   width: 100%;
   height: 2px;
@@ -228,16 +231,16 @@ canvas {
     0 0 5px rgba(180, 245, 255, 0.55);
 }
 
-.trigger:hover {
+.trg:hover {
   transform: scale(1.07);
   filter: brightness(1.08);
 }
 
-.trigger:active {
+.trg:active {
   transform: scale(0.95);
 }
 
-.overlay {
+.ovrl {
   position: fixed;
   inset: 0;
   z-index: 10;
@@ -253,11 +256,11 @@ canvas {
   backdrop-filter: blur(6px) saturate(130%);
 }
 
-.overlay[hidden] {
+.ovrl[hidden] {
   display: none;
 }
 
-.panel {
+.pnl {
   position: relative;
   width: min(360px, 84vw);
   padding: 30px 30px 34px;
@@ -270,7 +273,7 @@ canvas {
   overflow: hidden;
 }
 
-.panel::before {
+.pnl::before {
   content: "";
   position: absolute;
   inset: 2px 2px 52%;
@@ -279,7 +282,7 @@ canvas {
   pointer-events: none;
 }
 
-.title {
+.ttl {
   position: relative;
   margin: 0;
   font-size: 24px;
@@ -288,7 +291,7 @@ canvas {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 6px rgba(0, 55, 95, 0.2);
 }
 
-.toggle {
+.tgl {
   position: relative;
   display: flex;
   align-items: center;
@@ -297,7 +300,7 @@ canvas {
   margin-top: 18px;
 }
 
-.toggle-state {
+.tgl-state {
   display: flex;
   align-items: center;
   padding: 5px 10px;
@@ -310,7 +313,7 @@ canvas {
   text-shadow: 0 1px 2px rgba(0, 40, 70, 0.35);
 }
 
-.actions {
+.act {
   display: flex;
   gap: 10px;
   margin-top: 16px;
@@ -345,8 +348,8 @@ canvas {
   transform: translateY(1px) scale(0.98);
 }
 
-.trigger:focus-visible,
-.toggle:focus-visible,
+.trg:focus-visible,
+.tgl:focus-visible,
 .btn:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.9);
   outline-offset: 3px;

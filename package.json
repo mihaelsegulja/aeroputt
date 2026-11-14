@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "pack": "npm run build && cp dist/index.html dist/aeroputt.html && rm -f dist/aeroputt-itch.zip dist/aeroputt-10kb.zip && cd dist && zip -9 aeroputt-itch.zip index.html && 7z a -tzip -mx=9 -bso0 -bsp0 aeroputt-10kb.zip aeroputt.html",
     "preview": "vite preview"
   },
   "devDependencies": {

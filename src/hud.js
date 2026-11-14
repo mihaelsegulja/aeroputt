@@ -33,7 +33,7 @@ export function createHud() {
   const netEl = root.querySelector(".net")
 
   const toast = document.createElement("div")
-  toast.className = "toast"
+  toast.className = "tst"
 
   const toastTitle = document.createElement("b")
   const toastSub = document.createElement("span")
